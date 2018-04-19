@@ -19,8 +19,6 @@
 # SOFTWARE.
 
 require 'minitest/autorun'
-require 'tmpdir'
-require 'slop'
 require_relative '../lib/twee'
 
 # Twee main module test.
@@ -29,10 +27,8 @@ require_relative '../lib/twee'
 # License:: MIT
 class TestTwee < Minitest::Test
   def test_basic
-    Dir.mktmpdir 'test' do |dir|
-      Twee::CLI.new(
-        dry: true,
-      ).run
-    end
+    Twee::CLI.new(
+      dry: true
+    ).run
   end
 end

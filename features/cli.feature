@@ -18,6 +18,6 @@ Feature: Command Line Processing
     --token=X
     --tsecret=X
     """
-    When I run bin/twee with "--test yegor256@gmail.com --host test --user test --password test --subject test --letter a.liquid --from me@example.com --dry --resume test@example.com"
-    Then Stdout contains "Processed 1 email"
+    When I run bin/twee with "dm"
+    Then Stdout contains "Hello"
     And Exit code is zero
