@@ -14,7 +14,7 @@
 ## What this is for?
 
 This command line tool helps you manipulate your Twitter account
-and do mass operations thre.
+and do mass operations there.
 
 ## How to install?
 
