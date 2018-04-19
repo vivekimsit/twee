@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+# Copyright (c) 2018 Yegor Bugayenko
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the 'Software'), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+STDOUT.sync = true
+
+require 'slop'
+require_relative '../lib/twee'
+require_relative '../lib/twee/version'
+
+def config(path)
+  f = File.expand_path(path)
+  args = []
+  if File.exist?(f)
+    body = File.read(f)
+    args = body.split(/[\r\n]+/).map(&:strip)
+    puts "Found #{body.split(/\n/).length} lines in #{path} (#{f})"
+  else
+    puts "Default config file #{path} (#{f}) not found"
+  end
+  args
+end
+
+begin
+  args = ARGV + config('~/.twee') + config('.twee')
+  begin
+    opts = Slop.parse(args, strict: true, help: true) do |o|
+      o.banner = "Usage (#{Twee::VERSION}): twee [options]"
+      o.bool '--help', 'Show these instructions' do
+        puts o
+        exit
+      end
+      o.bool '-v', '--version', 'Show current version' do
+        puts Twee::VERSION
+        exit
+      end
+      o.bool '--dry', 'Read-only mode, nothing will be posted on Twitter'
+      o.string '--key', 'Twitter key', required: true
+      o.string '--secret', 'Twitter secret', required: true
+      o.string '--token', 'Twitter token', required: true
+      o.string '--tsecret', 'Twitter token secret', required: true
+    end
+  rescue Slop::Error => ex
+    raise StandardError, "#{ex.message}, try --help"
+  end
+
+  Encoding.default_external = Encoding::UTF_8
+  Encoding.default_internal = Encoding::UTF_8
+
+  Twee::CLI.new(opts).run
+
+rescue StandardError => ex
+  puts "#{Rainbow('ERROR').red} (#{ex.class.name}): #{ex.message}"
+  puts ex.backtrace
+  exit(255)
+end
